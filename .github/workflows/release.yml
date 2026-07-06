@@ -1,0 +1,67 @@
+name: Build and Upload Release Asset
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Build Release APK
+      run: ./gradlew assembleRelease
+      env:
+        # Pass dummy environment vars if keystore signing is configured in gradle, 
+        # or we will sign it in the next step using GitHub Secrets.
+        STORE_PASSWORD: ${{ secrets.STORE_PASSWORD || 'dummy_store_pass' }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'dummy_key_pass' }}
+
+    # If the user has configured keystore secrets in the repo, sign the APK.
+    - name: Sign Android Release APK
+      if: ${{ env.HAS_KEYSTORE == 'true' }}
+      id: sign_app
+      uses: r0adrunner/sign-android-release@v1
+      with:
+        releaseDirectory: app/build/outputs/apk/release
+        signingKeyBase64: ${{ secrets.KEYSTORE_BASE64 }}
+        alias: ${{ secrets.KEY_ALIAS }}
+        status: ${{ secrets.STORE_PASSWORD }}
+        keyPassword: ${{ secrets.KEY_PASSWORD }}
+      env:
+        HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
+
+    # Get the file path of the signed or unsigned APK
+    - name: Determine APK Path
+      id: apk_file
+      run: |
+        if [ -f "app/build/outputs/apk/release/app-release-signed.apk" ]; then
+          echo "apk_path=app/build/outputs/apk/release/app-release-signed.apk" >> $GITHUB_OUTPUT
+        else
+          echo "apk_path=app/build/outputs/apk/release/app-release-unsigned.apk" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Upload Release APK Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{ steps.apk_file.outputs.apk_path }}
+        asset_name: 5G-Guardian-v${{ github.event.release.tag_name }}.apk
+        asset_content_type: application/vnd.android.package-archive

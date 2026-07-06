@@ -1,0 +1,12 @@
+5G Guardian is a lightweight, privacy-first, fully Free and Open Source Software (FOSS) utility for Android. It operates as a persistent background service that continuously tracks your active cellular network type and immediately alerts you if your connection drops or falls back from high-speed 5G to 4G LTE, 3G, or 2G.
+
+It is designed for remote workers, users with unlimited 5G data plans, and network enthusiasts who need to remain connected to stable 5G carriers or instantly know when they have migrated to restricted bands.
+
+Key Features:
+- Real-Time Network Telemetry: Continuous, automated cellular carrier status checks (NR/5G, LTE/4G, 3G, 2G).
+- Persistent Background Monitoring: Runs as a foreground service with low resource usage to prevent the OS from killing the monitor.
+- Smart Call-State Integration: Intelligently silences alarms when a phone call is active and automatically resumes once the call ends.
+- Dual Alert Modes: Continuous loud alarm and brief quiet notification.
+- Custom Sound Explorer: Select any system ringtone or browse and select local audio files (MP3, WAV, OGG).
+- Built-in Network Simulator: Mock cellular state changes and phone call states to test.
+- 100% Offline & Private: Zero external network connections, zero trackers, zero telemetry, and zero ads.

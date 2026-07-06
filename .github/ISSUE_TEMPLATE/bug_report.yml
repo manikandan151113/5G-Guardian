@@ -1,0 +1,58 @@
+name: 🐛 Bug Report
+description: Report a bug to help us improve 5G Guardian.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to report a bug! Please fill out the form below as completely as possible.
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe what happened...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Explain how we can reproduce the behavior.
+      placeholder: |
+        1. Open the app
+        2. Start the monitoring service
+        3. Drop connection or switch simulation
+        4. See error...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: e.g., The alarm should play immediately when connection falls back.
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device Model
+      placeholder: e.g., Google Pixel 8 Pro
+    validations:
+      required: true
+  - type: input
+    id: android-version
+    attributes:
+      label: Android Version
+      placeholder: e.g., Android 14 (API 34)
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Screenshots
+      description: Paste any relevant terminal logs, system logs (logcat), or drag-and-drop screenshots here.
+      placeholder: Paste here...
+    validations:
+      required: false

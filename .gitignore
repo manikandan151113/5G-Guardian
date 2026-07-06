@@ -1,0 +1,57 @@
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/assetWizardSettings.xml
+.idea/dictionaries
+.idea/libraries/
+.idea/caches/
+.idea/navigation/
+.idea/jsLibraryMappings.xml
+.idea/kotlinc.xml
+.idea/modules.xml
+.idea/sonarIssues.xml
+.idea/vcs.xml
+
+# Gradle
+.gradle/
+build/
+app/build/
+captures/
+.externalNativeBuild/
+.cxx/
+.kotlin/
+
+# Local configuration files
+local.properties
+.env
+.env.local
+
+# Signing keys & Keystores
+*.jks
+*.keystore
+!debug.keystore
+
+# Built APKs & Bundles
+*.apk
+*.aar
+*.ap_
+*.aab
+
+# Log files
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Temporary & Cache files
+*.tmp
+*.bak
+*~
+.gradle-cache/
+.navigation/

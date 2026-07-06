@@ -1,0 +1,40 @@
+name: 💡 Feature Request
+description: Propose a new feature or enhancement for 5G Guardian.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to make 5G Guardian better? We would love to hear it!
+  - type: textarea
+    id: problem
+    attributes:
+      label: Is your feature request related to a problem?
+      description: Describe the problem you are facing or what is missing.
+      placeholder: e.g., I'm frustrated because I cannot customize the vibration pattern...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see implemented.
+      placeholder: Describe the feature details...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: List any alternative solutions or features you've considered.
+      placeholder: e.g., Manual notifications instead of alarms.
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or mockup sketches about the feature request here.
+      placeholder: Add context...
+    validations:
+      required: false
