@@ -1,1 +1,1 @@
-Continuously monitor mobile network type and alert when the phone falls back from 5G.
+Monitor mobile network type and alert when the phone falls back from 5G.

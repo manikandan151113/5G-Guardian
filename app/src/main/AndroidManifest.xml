@@ -24,7 +24,7 @@
             android:name="com.fivegguardian.NetworkMonitorService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="mediaPlayback|dataSync" />
+            android:foregroundServiceType="mediaPlayback" />
 
         <activity
             android:name="com.fivegguardian.MainActivity"
