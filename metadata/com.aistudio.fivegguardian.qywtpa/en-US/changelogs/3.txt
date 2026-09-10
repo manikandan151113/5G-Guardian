@@ -1,0 +1,5 @@
+- Improved F-Droid source build compatibility
+- Fixed unsigned release packaging in unprivileged container environments
+- Removed location permissions (app requires zero location access)
+- Live radio metrics display enhancements
+- 100% offline, zero internet permission, privacy-focused network monitoring

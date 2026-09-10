@@ -1,0 +1,6 @@
+{
+  "name": "5G Guardian",
+  "description": "Continuously monitor mobile network type and alert when the phone falls back from 5G to 4G.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,10 @@
+5G Guardian is a lightweight, 100% offline, privacy-first Android utility that continuously monitors your active mobile cellular connection and alerts you when your network degrades or falls back from 5G to 4G LTE or older generations.
+
+Key Features:
+* Real-time 5G SA/NSA and LTE network detection
+* Screen-off smart battery optimization (alarms automatically paused when screen is unlit)
+* Active phone call suppression and 30-second post-call cooldown period
+* Zero internet permission requested — 100% offline and zero data collection
+* Customizable continuous alarm sirens or gentle single notification tones
+* Native Android system sounds and SAF storage custom audio file picker
+* Built-in interactive test simulator to safely verify fallback alarms

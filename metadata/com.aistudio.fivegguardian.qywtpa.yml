@@ -1,0 +1,51 @@
+Categories:
+  - System
+  - Security
+  - Connectivity
+License: GPL-3.0-or-later
+AuthorName: Manikandan
+SourceCode: https://github.com/manikandan151113/5G-Guardian
+IssueTracker: https://github.com/manikandan151113/5G-Guardian/issues
+
+Summary: Continuous 5G cellular network monitor and instant fallback alert
+Description: |-
+  5G Guardian is a lightweight, 100% offline, privacy-first Android utility
+  that continuously monitors your active mobile cellular connection and alerts
+  you when your network degrades or falls back from 5G to 4G LTE or older
+  generations.
+
+  Key Capabilities:
+  * Continuous background network detection using native Android Telephony APIs
+  * Smart screen-off power saving (automatically pauses alarms when screen is off)
+  * Active phone call suppression and 30-second post-call cooldown period
+  * Zero internet permission requested — 100% offline and zero data collection
+  * Customizable continuous alarm sirens or gentle single notification tones
+  * Native Android system sounds and SAF storage custom audio file picker
+  * Built-in interactive test simulator to safely verify fallback alarms
+
+RepoType: git
+Repo: https://github.com/manikandan151113/5G-Guardian.git
+
+Builds:
+  - versionName: '1.0'
+    versionCode: 1
+    commit: 'v1.0'
+    gradle:
+      - yes
+
+  - versionName: '1.1.0'
+    versionCode: 2
+    commit: 'v1.1.0'
+    gradle:
+      - yes
+
+  - versionName: '1.1.1'
+    versionCode: 3
+    commit: 'v1.1.1'
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: '1.1.1'
+CurrentVersionCode: 3
