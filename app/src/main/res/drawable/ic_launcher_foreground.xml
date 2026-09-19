@@ -1,30 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:pathData="M31,63.928c0,0 6.4,-11 12.1,-13.1c7.2,-2.6 26,-1.4 26,-1.4l38.1,38.1L107,108.928l-32,-1L31,63.928z">
-        <aapt:attr name="android:fillColor">
+
+    <!-- Halo ring glow above shield -->
+    <path
+        android:pathData="M38,25.5 C38,23 45,21.5 54,21.5 C63,21.5 70,23 70,25.5 C70,28 63,29.5 54,29.5 C45,29.5 38,28 38,25.5 Z"
+        android:strokeWidth="1.5"
+        android:fillColor="#00000000">
+        <aapt:attr name="android:strokeColor">
             <gradient
-                android:endX="85.84757"
-                android:endY="92.4963"
-                android:startX="42.9492"
-                android:startY="49.59793"
+                android:startX="38"
+                android:startY="25"
+                android:endX="70"
+                android:endY="25"
                 android:type="linear">
-                <item
-                    android:color="#44000000"
-                    android:offset="0.0" />
-                <item
-                    android:color="#00000000"
-                    android:offset="1.0" />
+                <item android:offset="0.0" android:color="#9938BDF8" />
+                <item android:offset="0.5" android:color="#E6E0F2FE" />
+                <item android:offset="1.0" android:color="#99F97316" />
             </gradient>
         </aapt:attr>
     </path>
+
+    <!-- Outer shield border (Ice Cyan / White glow) -->
     <path
-        android:fillColor="#FFFFFF"
-        android:fillType="nonZero"
-        android:pathData="M65.3,45.828l3.8,-6.6c0.2,-0.4 0.1,-0.9 -0.3,-1.1c-0.4,-0.2 -0.9,-0.1 -1.1,0.3l-3.9,6.7c-6.3,-2.8 -13.4,-2.8 -19.7,0l-3.9,-6.7c-0.2,-0.4 -0.7,-0.5 -1.1,-0.3C38.8,38.328 38.7,38.828 38.9,39.228l3.8,6.6C36.2,49.428 31.7,56.028 31,63.928h46C76.3,56.028 71.8,49.428 65.3,45.828zM43.4,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2c-0.3,-0.7 -0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C45.3,56.528 44.5,57.328 43.4,57.328L43.4,57.328zM64.6,57.328c-0.8,0 -1.5,-0.5 -1.8,-1.2s-0.1,-1.5 0.4,-2.1c0.5,-0.5 1.4,-0.7 2.1,-0.4c0.7,0.3 1.2,1 1.2,1.8C66.5,56.528 65.6,57.328 64.6,57.328L64.6,57.328z"
-        android:strokeWidth="1"
-        android:strokeColor="#00000000" />
+        android:pathData="M54,27.5 L77,31.2 C77.5,58.5 66.5,77 54,86 C41.5,77 30.5,58.5 31,31.2 Z"
+        android:fillColor="#E2F1FD" />
+
+    <!-- Vibrant Safety Orange Inner Accent Bevel -->
+    <path
+        android:pathData="M54,30.5 L74.2,33.8 C74.6,56.8 65,73 54,81.5 C43,73 33.4,56.8 33.8,33.8 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="34"
+                android:startY="31"
+                android:endX="74"
+                android:endY="81"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#FDBA74" />
+                <item android:offset="0.4" android:color="#F97316" />
+                <item android:offset="1.0" android:color="#EA580C" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Shield Face Left Facet (Deep Navy Shadow) -->
+    <path
+        android:pathData="M54,34 L36.8,36.6 C36.4,54.8 44.8,69.5 54,77 Z"
+        android:fillColor="#091224" />
+
+    <!-- Shield Face Right Facet (Deep Navy Metallic Sheen) -->
+    <path
+        android:pathData="M54,34 L71.2,36.6 C71.6,54.8 63.2,69.5 54,77 Z"
+        android:fillColor="#15243E" />
+
+    <!-- "5" Symbol Base -->
+    <path
+        android:pathData="M40.5,44 H49.5 V47.2 H43.8 V51.5 H47.5 C50,51.5 51.5,53.2 51.5,55.8 V59.2 C51.5,61.8 50,63.5 47.5,63.5 H40.5 V60.3 H47.5 C48.2,60.3 48.6,59.8 48.6,59 V56 C48.6,55.2 48.2,54.7 47.5,54.7 H40.5 Z"
+        android:fillColor="#0284C7" />
+
+    <path
+        android:pathData="M41,44.5 H49 V46.7 H44.3 V52 H47.5 C49.6,52 51,53.5 51,55.8 V59.2 C51,61.5 49.6,63 47.5,63 H41 V60.8 H47.5 C48,60.8 48.3,60.4 48.3,59 V56 C48.3,54.6 48,54.2 47.5,54.2 H41 Z"
+        android:fillColor="#38BDF8" />
+
+    <!-- "G" Symbol Base -->
+    <path
+        android:pathData="M67.5,44 H56.5 C54,44 52.5,45.7 52.5,48.2 V59.3 C52.5,61.8 54,63.5 56.5,63.5 H67.5 V53 H61 V56.2 H64.5 V60.3 H56.5 C55.8,60.3 55.4,59.8 55.4,59 V48.5 C55.4,47.7 55.8,47.2 56.5,47.2 H67.5 Z"
+        android:fillColor="#0284C7" />
+
+    <path
+        android:pathData="M67,44.5 H56.5 C54.4,44.5 53,46 53,48.2 V59.3 C53,61.5 54.4,63 56.5,63 H67 V53.5 H61.5 V55.8 H64.2 V60.8 H56.5 C56,60.8 55.7,60.4 55.7,59 V48.5 C55.7,47.1 56,46.7 56.5,46.7 H67 Z"
+        android:fillColor="#38BDF8" />
+
+    <!-- Dynamic Speed Lightning Arrow cutting across shield diagonally -->
+    <!-- Outer Glow / Shadow -->
+    <path
+        android:pathData="M42,74 L52,57 L54,58.5 L73,34 L69,30 L81.5,26 L78,38.5 L74.5,35 L55.5,59.5 L53.5,58 L43.5,75 Z"
+        android:fillColor="#0A1E3F" />
+
+    <!-- Arrow Body in Electric Cyan & White Core -->
+    <path
+        android:pathData="M43,72.5 L53,56 L55,57.5 L73.5,33.5 L70,30 L80.5,27 L77.5,37.5 L74.2,34.2 L55.8,58.5 L53.8,57 L44.2,73.5 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="43"
+                android:startY="73"
+                android:endX="80"
+                android:endY="27"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#0284C7" />
+                <item android:offset="0.5" android:color="#38BDF8" />
+                <item android:offset="1.0" android:color="#F0F9FF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Arrow Central Energy Core (Gleam) -->
+    <path
+        android:pathData="M44.5,71 L53.5,56.5 L74,32.5 L72,30.5 L79.5,28 L77,35.5 L75,33.5 L54.5,58 L45.5,72.5 Z"
+        android:fillColor="#FFFFFF" />
+
 </vector>

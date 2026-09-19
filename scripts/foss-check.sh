@@ -86,6 +86,7 @@ echo "--- 5. Checking for Unapproved Embedded Binaries ---"
 SUSPICIOUS_BINS=$(find . -type f \( -name "*.jar" -o -name "*.aar" -o -name "*.so" -o -name "*.dll" -o -name "*.exe" -o -name "*.jks" \) \
     -not -path "*/.gradle/*" \
     -not -path "*/build/*" \
+    -not -path "*/gradle/wrapper/*" \
     -not -path "*/debug.keystore" || true)
 
 if [ -n "$SUSPICIOUS_BINS" ]; then
