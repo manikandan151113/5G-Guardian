@@ -236,4 +236,160 @@ class ExampleRobolectricTest {
         val activity = controller.get()
         org.junit.Assert.assertNotNull(activity)
     }
+
+    private fun createService(isInteractive: Boolean): Pair<NetworkMonitorService, org.robolectric.android.controller.ServiceController<NetworkMonitorService>> {
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+        org.robolectric.Shadows.shadowOf(powerManager).setIsInteractive(isInteractive)
+        val controller = org.robolectric.Robolectric.buildService(NetworkMonitorService::class.java).create()
+        return Pair(controller.get(), controller)
+    }
+
+    @Test
+    fun `TEST 1 - 5G plus screen ON plus idle call - no alarm`() {
+        val (service, controller) = createService(isInteractive = true)
+        NetworkMonitorManager.updateNetworkType(NetworkType.TYPE_5G)
+        NetworkMonitorManager.updateCallState(CallState.IDLE)
+        service.evaluateAlarmState()
+        assertFalse(NetworkMonitorManager.isAlarmPlaying.value)
+        controller.destroy()
+    }
+
+    @Test
+    fun `TEST 2 - 5G plus screen OFF plus idle call - no alarm`() {
+        val (service, controller) = createService(isInteractive = false)
+        NetworkMonitorManager.updateNetworkType(NetworkType.TYPE_5G)
+        NetworkMonitorManager.updateCallState(CallState.IDLE)
+        service.evaluateAlarmState()
+        assertFalse(NetworkMonitorManager.isAlarmPlaying.value)
+        controller.destroy()
+    }
+
+    @Test
+    fun `TEST 3 - 4G plus screen ON plus idle call - alarm triggers`() {
+        val (service, controller) = createService(isInteractive = true)
+        NetworkMonitorManager.updateNetworkType(NetworkType.TYPE_4G)
+        NetworkMonitorManager.updateCallState(CallState.IDLE)
+        service.evaluateAlarmState()
+        assertTrue(NetworkMonitorManager.isAlarmPlaying.value)
+        controller.destroy()
+    }
+
+    @Test
+    fun `TEST 4 - 4G plus screen OFF plus idle call - alarm triggers`() {
+        val (service, controller) = createService(isInteractive = false)
+        NetworkMonitorManager.updateNetworkType(NetworkType.TYPE_4G)
+        NetworkMonitorManager.updateCallState(CallState.IDLE)
+        service.evaluateAlarmState()
+        assertTrue(NetworkMonitorManager.isAlarmPlaying.value)
+        controller.destroy()
+    }
+
+    @Test
+    fun `TEST 5 - 4G plus screen OFF plus active call - no alarm`() {
+        val (service, controller) = createService(isInteractive = false)
+        NetworkMonitorManager.updateNetworkType(NetworkType.TYPE_4G)
+        NetworkMonitorManager.updateCallState(CallState.OFFHOOK)
+        service.evaluateAlarmState()
+        assertFalse(NetworkMonitorManager.isAlarmPlaying.value)
+        controller.destroy()
+    }
+
+    @Test
+    fun `TEST 6 - 4G plus screen ON plus active call - no alarm`() {
+        val (service, controller) = createService(isInteractive = true)
+        NetworkMonitorManager.updateNetworkType(NetworkType.TYPE_4G)
+        NetworkMonitorManager.updateCallState(CallState.RINGING)
+        service.evaluateAlarmState()
+        assertFalse(NetworkMonitorManager.isAlarmPlaying.value)
+        controller.destroy()
+    }
+
+    @Test
+    fun `TEST 7 - 4G plus screen OFF plus call ended but cooldown active - no alarm`() {
+        val (service, controller) = createService(isInteractive = false)
+        NetworkMonitorManager.updateNetworkType(NetworkType.TYPE_4G)
+        NetworkMonitorManager.updateCallState(CallState.IDLE)
+        service.lastCallEndedTime = System.currentTimeMillis()
+        service.evaluateAlarmState()
+        assertFalse(NetworkMonitorManager.isAlarmPlaying.value)
+        controller.destroy()
+    }
+
+    @Test
+    fun `TEST 8 - 4G plus screen OFF plus cooldown expired - alarm triggers`() {
+        val (service, controller) = createService(isInteractive = false)
+        NetworkMonitorManager.updateNetworkType(NetworkType.TYPE_4G)
+        NetworkMonitorManager.updateCallState(CallState.IDLE)
+        service.lastCallEndedTime = System.currentTimeMillis() - 31000
+        service.evaluateAlarmState()
+        assertTrue(NetworkMonitorManager.isAlarmPlaying.value)
+        controller.destroy()
+    }
+
+    @Test
+    fun `TEST 9 - transition 4G to 5G stops alarm`() {
+        val (service, controller) = createService(isInteractive = false)
+        NetworkMonitorManager.updateNetworkType(NetworkType.TYPE_4G)
+        NetworkMonitorManager.updateCallState(CallState.IDLE)
+        service.evaluateAlarmState()
+        assertTrue(NetworkMonitorManager.isAlarmPlaying.value)
+
+        // Transition 4G -> 5G
+        service.handleNetworkChanged(NetworkType.TYPE_5G)
+        assertFalse(NetworkMonitorManager.isAlarmPlaying.value)
+        controller.destroy()
+    }
+
+    @Test
+    fun `TEST 10 - transition 5G to 4G while screen ON triggers alarm`() {
+        val (service, controller) = createService(isInteractive = true)
+        NetworkMonitorManager.updateNetworkType(NetworkType.TYPE_5G)
+        NetworkMonitorManager.updateCallState(CallState.IDLE)
+        service.evaluateAlarmState()
+        assertFalse(NetworkMonitorManager.isAlarmPlaying.value)
+
+        // Drop to 4G
+        service.handleNetworkChanged(NetworkType.TYPE_4G)
+        assertTrue(NetworkMonitorManager.isAlarmPlaying.value)
+        controller.destroy()
+    }
+
+    @Test
+    fun `TEST 11 - transition 5G to 4G while screen OFF triggers alarm`() {
+        val (service, controller) = createService(isInteractive = false)
+        NetworkMonitorManager.updateNetworkType(NetworkType.TYPE_5G)
+        NetworkMonitorManager.updateCallState(CallState.IDLE)
+        service.evaluateAlarmState()
+        assertFalse(NetworkMonitorManager.isAlarmPlaying.value)
+
+        // Drop to 4G while screen is OFF
+        service.handleNetworkChanged(NetworkType.TYPE_4G)
+        assertTrue(NetworkMonitorManager.isAlarmPlaying.value)
+        controller.destroy()
+    }
+
+    @Test
+    fun `TEST 12 - transition 5G to TYPE_OTHER degraded network triggers alarm`() {
+        val (service, controller) = createService(isInteractive = false)
+        NetworkMonitorManager.updateNetworkType(NetworkType.TYPE_5G)
+        NetworkMonitorManager.updateCallState(CallState.IDLE)
+        service.evaluateAlarmState()
+        assertFalse(NetworkMonitorManager.isAlarmPlaying.value)
+
+        // Degrade network to 3G/2G (TYPE_OTHER)
+        service.handleNetworkChanged(NetworkType.TYPE_OTHER)
+        assertTrue(NetworkMonitorManager.isAlarmPlaying.value)
+        controller.destroy()
+    }
+
+    @Test
+    fun `test 4G fallback in NOTIFICATION_ONLY mode does not keep continuous alarm playing`() {
+        val (service, controller) = createService(isInteractive = false)
+        NetworkMonitorManager.setAlertMode(context, AlertMode.NOTIFICATION_ONLY)
+        NetworkMonitorManager.updateNetworkType(NetworkType.TYPE_4G)
+        NetworkMonitorManager.updateCallState(CallState.IDLE)
+        service.evaluateAlarmState()
+        assertFalse(NetworkMonitorManager.isAlarmPlaying.value)
+        controller.destroy()
+    }
 }

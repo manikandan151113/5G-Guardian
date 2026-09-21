@@ -42,24 +42,18 @@ class NetworkMonitorService : Service() {
     private var alarmTriggeredForCurrentFallback = false
     private var isTestingAlarm = false
     private var alarmSilencedByCall = false
-    private var lastCallEndedTime = 0L
+    internal var lastCallEndedTime = 0L
     private var isScreenReceiverRegistered = false
 
     private val screenStateReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
                 Intent.ACTION_SCREEN_OFF -> {
-                    val timestamp = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-                    Log.d("NetworkMonitorService", "Screen off received. Stopping alarm if playing.")
-                    if (NetworkMonitorManager.isAlarmPlaying.value && !isTestingAlarm) {
-                        alarmPlayer.stop()
-                        NetworkMonitorManager.addLog("[$timestamp] 🔇 Alarm stopped: Screen is Off.")
-                    }
+                    Log.d("NetworkMonitorService", "Screen off received. Guarding continues while device is locked/unlit.")
                     evaluateAlarmState()
                 }
                 Intent.ACTION_SCREEN_ON -> {
-                    val timestamp = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-                    Log.d("NetworkMonitorService", "Screen on received. Re-evaluating alarm.")
+                    Log.d("NetworkMonitorService", "Screen on received. Re-evaluating alarm state.")
                     evaluateAlarmState()
                 }
             }
@@ -382,28 +376,17 @@ class NetworkMonitorService : Service() {
         }
     }
 
-    private fun evaluateAlarmState() {
+    internal fun evaluateAlarmState() {
         val currentNet = NetworkMonitorManager.currentNetworkType.value
         val currentCall = NetworkMonitorManager.callState.value
         val isSim = NetworkMonitorManager.isSimulationMode.value
         val timestamp = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
         val alertMode = NetworkMonitorManager.alertMode.value
+        val isInteractive = isScreenInteractive()
 
-        Log.d("NetworkMonitorService", "evaluateAlarmState: network=$currentNet, call=$currentCall, isSim=$isSim, mode=$alertMode")
+        Log.d("NetworkMonitorService", "evaluateAlarmState: network=$currentNet, call=$currentCall, isInteractive=$isInteractive, isSim=$isSim, mode=$alertMode")
 
-        // 1. Check if screen is off (not interactive)
-        val isScreenOff = !isScreenInteractive()
-        if (isScreenOff) {
-            if (NetworkMonitorManager.isAlarmPlaying.value && !isTestingAlarm) {
-                alarmPlayer.stop()
-                Log.d("NetworkMonitorService", "Alarm stopped because screen is off.")
-                NetworkMonitorManager.addLog("[$timestamp] 🔇 Alarm stopped: Screen is Off.")
-            }
-            showNormalNotification("Guarding active. Screen is off (Alarms Suppressed).")
-            return
-        }
-
-        // 2. Check if mobile data is off
+        // 1. Check if mobile data is off
         val isMobileDataOff = if (isSim) {
             currentNet == NetworkType.OFFLINE
         } else {
@@ -480,7 +463,7 @@ class NetworkMonitorService : Service() {
         }
     }
 
-    private fun handleNetworkChanged(newType: NetworkType) {
+    internal fun handleNetworkChanged(newType: NetworkType) {
         if (NetworkMonitorManager.isSimulationMode.value) {
             Log.d("NetworkMonitorService", "Simulation Mode is active. Ignoring real network change to $newType")
             return
@@ -497,7 +480,7 @@ class NetworkMonitorService : Service() {
         evaluateAlarmState()
     }
 
-    private fun handleCallStateChanged(newCallState: CallState) {
+    internal fun handleCallStateChanged(newCallState: CallState) {
         if (NetworkMonitorManager.isSimulationMode.value) {
             Log.d("NetworkMonitorService", "Simulation Mode is active. Ignoring real call state change to $newCallState")
             return
