@@ -7,17 +7,36 @@ import android.media.MediaPlayer
 import android.media.RingtoneManager
 import android.media.ToneGenerator
 import android.net.Uri
+import android.os.PowerManager
 import android.util.Log
 
 class AlarmPlayer(private val context: Context) {
     private var mediaPlayer: MediaPlayer? = null
     private var toneGenerator: ToneGenerator? = null
+    private var wakeLock: PowerManager.WakeLock? = null
+
+    init {
+        try {
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
+            wakeLock = powerManager?.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "5GGuardian:AlarmPlayerWakeLock")
+        } catch (e: Exception) {
+            Log.w("AlarmPlayer", "Failed to initialize wake lock", e)
+        }
+    }
 
     @Synchronized
     fun start() {
         if (mediaPlayer?.isPlaying == true || toneGenerator != null) {
             Log.d("AlarmPlayer", "Alarm is already playing, skipping start.")
             return
+        }
+
+        try {
+            if (wakeLock?.isHeld != true) {
+                wakeLock?.acquire(10 * 60 * 1000L)
+            }
+        } catch (e: Exception) {
+            Log.w("AlarmPlayer", "Failed to acquire wake lock for alarm playback", e)
         }
 
         val toneId = NetworkMonitorManager.selectedAlarmToneId.value
@@ -54,6 +73,11 @@ class AlarmPlayer(private val context: Context) {
                             .build()
                     )
                     isLooping = true
+                    try {
+                        setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK)
+                    } catch (e: Exception) {
+                        Log.w("AlarmPlayer", "Could not setWakeMode on MediaPlayer", e)
+                    }
                     prepare()
                     start()
                 }
@@ -158,6 +182,13 @@ class AlarmPlayer(private val context: Context) {
             Log.e("AlarmPlayer", "Error stopping tone generator", e)
         } finally {
             toneGenerator = null
+            try {
+                if (wakeLock?.isHeld == true) {
+                    wakeLock?.release()
+                }
+            } catch (e: Exception) {
+                Log.w("AlarmPlayer", "Could not release wakeLock", e)
+            }
             NetworkMonitorManager.updateAlarmPlaying(false)
             Log.d("AlarmPlayer", "Alarm/Tone stopped playing.")
         }

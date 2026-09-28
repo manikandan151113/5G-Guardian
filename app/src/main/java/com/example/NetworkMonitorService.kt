@@ -44,17 +44,28 @@ class NetworkMonitorService : Service() {
     private var alarmSilencedByCall = false
     internal var lastCallEndedTime = 0L
     private var isScreenReceiverRegistered = false
+    private var isCurrentOverride5G = false
+
+    private val periodicHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private val periodicChecker = object : Runnable {
+        override fun run() {
+            if (NetworkMonitorManager.isMonitoring.value) {
+                checkCurrentNetworkTypeAndEvaluate()
+                periodicHandler.postDelayed(this, 2500L)
+            }
+        }
+    }
 
     private val screenStateReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             when (intent.action) {
                 Intent.ACTION_SCREEN_OFF -> {
                     Log.d("NetworkMonitorService", "Screen off received. Guarding continues while device is locked/unlit.")
-                    evaluateAlarmState()
+                    checkCurrentNetworkTypeAndEvaluate()
                 }
                 Intent.ACTION_SCREEN_ON -> {
                     Log.d("NetworkMonitorService", "Screen on received. Re-evaluating alarm state.")
-                    evaluateAlarmState()
+                    checkCurrentNetworkTypeAndEvaluate()
                 }
             }
         }
@@ -131,10 +142,14 @@ class NetworkMonitorService : Service() {
 
         registerTelephonyListeners()
         evaluateAlarmState()
+
+        periodicHandler.removeCallbacks(periodicChecker)
+        periodicHandler.postDelayed(periodicChecker, 2500L)
     }
 
     private fun stopMonitoring() {
         Log.d("NetworkMonitorService", "stopMonitoring")
+        periodicHandler.removeCallbacks(periodicChecker)
         unregisterTelephonyListeners()
 
         if (isScreenReceiverRegistered) {
@@ -223,7 +238,8 @@ class NetworkMonitorService : Service() {
                 val callback = @RequiresApi(Build.VERSION_CODES.S) object : TelephonyCallback(),
                     TelephonyCallback.DisplayInfoListener,
                     TelephonyCallback.CallStateListener,
-                    TelephonyCallback.DataConnectionStateListener {
+                    TelephonyCallback.DataConnectionStateListener,
+                    TelephonyCallback.ServiceStateListener {
 
                     override fun onDisplayInfoChanged(telephonyDisplayInfo: TelephonyDisplayInfo) {
                         val overrideType = telephonyDisplayInfo.overrideNetworkType
@@ -232,6 +248,7 @@ class NetworkMonitorService : Service() {
                         val is5G = overrideType == TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NR_NSA ||
                                 overrideType == TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NR_ADVANCED
                         
+                        isCurrentOverride5G = is5G
                         if (is5G) {
                             handleNetworkChanged(NetworkType.TYPE_5G)
                         } else {
@@ -272,6 +289,11 @@ class NetworkMonitorService : Service() {
                         }
                         handleNetworkChanged(type)
                     }
+
+                    override fun onServiceStateChanged(serviceState: android.telephony.ServiceState) {
+                        Log.d("NetworkMonitorService", "onServiceStateChanged: state=$serviceState")
+                        checkCurrentNetworkTypeAndEvaluate()
+                    }
                 }
                 
                 telephonyManager.registerTelephonyCallback(mainExecutor, callback)
@@ -284,11 +306,12 @@ class NetworkMonitorService : Service() {
             try {
                 val listener = LegacyPhoneStateListener(
                     onNetworkChanged = { handleNetworkChanged(it) },
-                    onCallStateChanged = { handleCallStateChanged(it) }
+                    onCallStateChanged = { handleCallStateChanged(it) },
+                    onServiceStateChanged = { checkCurrentNetworkTypeAndEvaluate() }
                 )
                 telephonyManager.listen(
                     listener,
-                    PhoneStateListener.LISTEN_DATA_CONNECTION_STATE or PhoneStateListener.LISTEN_CALL_STATE
+                    PhoneStateListener.LISTEN_DATA_CONNECTION_STATE or PhoneStateListener.LISTEN_CALL_STATE or PhoneStateListener.LISTEN_SERVICE_STATE
                 )
                 legacyPhoneStateListener = listener
                 Log.d("NetworkMonitorService", "Registered Legacy PhoneStateListener successfully.")
@@ -296,6 +319,32 @@ class NetworkMonitorService : Service() {
                 Log.e("NetworkMonitorService", "Failed to register Legacy PhoneStateListener", e)
             }
         }
+    }
+
+    private fun checkCurrentNetworkTypeAndEvaluate() {
+        if (NetworkMonitorManager.isSimulationMode.value) {
+            evaluateAlarmState()
+            return
+        }
+        val telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        val baseType = try {
+            telephonyManager.dataNetworkType
+        } catch (e: SecurityException) {
+            TelephonyManager.NETWORK_TYPE_UNKNOWN
+        }
+
+        if (isCurrentOverride5G) {
+            handleNetworkChanged(NetworkType.TYPE_5G)
+        } else {
+            val resolvedType = when (baseType) {
+                TelephonyManager.NETWORK_TYPE_NR -> NetworkType.TYPE_5G
+                TelephonyManager.NETWORK_TYPE_LTE -> NetworkType.TYPE_4G
+                TelephonyManager.NETWORK_TYPE_UNKNOWN -> previousNetworkType ?: NetworkType.OFFLINE
+                else -> NetworkType.TYPE_OTHER
+            }
+            handleNetworkChanged(resolvedType)
+        }
+        evaluateAlarmState()
     }
 
     private fun unregisterTelephonyListeners() {
@@ -331,6 +380,7 @@ class NetworkMonitorService : Service() {
             val type = when (networkType) {
                 TelephonyManager.NETWORK_TYPE_NR -> NetworkType.TYPE_5G
                 TelephonyManager.NETWORK_TYPE_LTE -> NetworkType.TYPE_4G
+                TelephonyManager.NETWORK_TYPE_UNKNOWN -> NetworkType.OFFLINE
                 else -> NetworkType.TYPE_OTHER
             }
             NetworkMonitorManager.updateNetworkType(type)
@@ -390,7 +440,7 @@ class NetworkMonitorService : Service() {
         val isMobileDataOff = if (isSim) {
             currentNet == NetworkType.OFFLINE
         } else {
-            currentNet == NetworkType.OFFLINE || !isMobileDataEnabled()
+            currentNet == NetworkType.OFFLINE || (!isMobileDataEnabled() && currentNet != NetworkType.TYPE_4G && currentNet != NetworkType.TYPE_5G)
         }
 
         if (isMobileDataOff) {
@@ -612,13 +662,16 @@ class NetworkMonitorService : Service() {
 
     override fun onDestroy() {
         Log.d("NetworkMonitorService", "onDestroy")
+        periodicHandler.removeCallbacks(periodicChecker)
+        stopMonitoring()
         super.onDestroy()
     }
 
     // Helper for legacy PhoneStateListener
     private class LegacyPhoneStateListener(
         private val onNetworkChanged: (NetworkType) -> Unit,
-        private val onCallStateChanged: (CallState) -> Unit
+        private val onCallStateChanged: (CallState) -> Unit,
+        private val onServiceStateChanged: () -> Unit
     ) : PhoneStateListener() {
 
         @Deprecated("Deprecated in Java")
@@ -640,6 +693,11 @@ class NetworkMonitorService : Service() {
                 else -> CallState.IDLE
             }
             onCallStateChanged(callState)
+        }
+
+        @Deprecated("Deprecated in Java")
+        override fun onServiceStateChanged(serviceState: android.telephony.ServiceState?) {
+            onServiceStateChanged()
         }
     }
 }

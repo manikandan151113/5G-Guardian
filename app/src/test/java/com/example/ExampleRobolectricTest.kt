@@ -232,14 +232,17 @@ class ExampleRobolectricTest {
 
     @Test
     fun `test activity launch`() {
-        val controller = org.robolectric.Robolectric.buildActivity(MainActivity::class.java).setup()
+        val controller = org.robolectric.Robolectric.buildActivity(MainActivity::class.java).create()
         val activity = controller.get()
         org.junit.Assert.assertNotNull(activity)
+        controller.destroy()
     }
 
     private fun createService(isInteractive: Boolean): Pair<NetworkMonitorService, org.robolectric.android.controller.ServiceController<NetworkMonitorService>> {
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
         org.robolectric.Shadows.shadowOf(powerManager).setIsInteractive(isInteractive)
+        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as android.telephony.TelephonyManager
+        org.robolectric.Shadows.shadowOf(telephonyManager).setDataEnabled(true)
         val controller = org.robolectric.Robolectric.buildService(NetworkMonitorService::class.java).create()
         return Pair(controller.get(), controller)
     }
